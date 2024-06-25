@@ -17,7 +17,7 @@ function Login({ setShowLogin, myStorage, setCurrentUser }) {
         username:username,
         password: password
       }
-      const response = await axios.post("/users/login", loginUser);
+      const response = await axios.post("https://travel-map-ac8b.onrender.com/api/users/login", loginUser);
       console.log("Login successful:", response.data);
       console.log(response.data[0].username);
       myStorage.setItem("user", response.data[0].username);

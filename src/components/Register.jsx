@@ -17,7 +17,7 @@ function Register({setShowRegister}) {
         email:email,
         password:password
       }
-      const response = await axios.post("/users/register", newUser);
+      const response = await axios.post("https://travel-map-ac8b.onrender.com/api/users/register", newUser);
       console.log("Registration successful:", response.data);
       setError(false)
       setSuccess(true)
