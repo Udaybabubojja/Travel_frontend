@@ -1,14 +1,12 @@
-import * as React from 'react';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import Map, { Marker, Popup } from 'react-map-gl';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import StarIcon from '@mui/icons-material/Star';
 import "./App.css";
-import axios from "axios";
-import { format } from "timeago.js";
 import Register from './components/Register';
 import Login from "./components/Login";
+import { format } from "timeago.js";
 
 function App() {
   const myStorage = window.localStorage;
@@ -19,8 +17,8 @@ function App() {
   const [title, setTitle] = useState(null);
   const [desc, setDesc] = useState(null);
   const [rating, setRating] = useState(0);
-  const [showLogin, setShowLogin] = useState(false)
-  const [showRegister, setShowRegister] = useState(false)
+  const [showLogin, setShowLogin] = useState(false);
+  const [showRegister, setShowRegister] = useState(false);
   const [viewport, setViewport] = useState({
     longitude: 0,
     latitude: 0,
@@ -59,12 +57,16 @@ function App() {
   useEffect(() => {
     const getPins = async () => {
       try {
-        const res = await axios.get("https://travel-map-ac8b.onrender.com/api/pins");
-        setPins(res.data);
+        const res = await fetch("https://travel-map-ac8b.onrender.com/api/pins");
+        if (!res.ok) {
+          throw new Error(`HTTP error! Status: ${res.status}`);
+        }
+        const data = await res.json();
+        setPins(data);
       } catch (err) {
         console.log(err);
       }
-    }
+    };
     getPins();
   }, []);
 
@@ -75,16 +77,15 @@ function App() {
       latitude: lat,
       longitude: long
     });
-    console.log(viewport);
-  }
+  };
 
   const handleAddClick = (event) => {
-    const { lat, lng } = event.lngLat;
+    const { lngLat } = event;
     setNewplace({
-      lat: lat,
-      long: lng
+      lat: lngLat[1],
+      long: lngLat[0]
     });
-  };  
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -97,13 +98,23 @@ function App() {
       long: newPlace.long
     };
     try {
-      if (currentUser === "") { 
+      if (!currentUser) {
         alert("Please login to add your review");
         setShowLogin(true);
         return;
       }
-      const res = await axios.post("https://travel-map-ac8b.onrender.com/api/pins", newPin);
-      setPins([...pins, res.data]);
+      const res = await fetch("https://travel-map-ac8b.onrender.com/api/pins", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newPin),
+      });
+      if (!res.ok) {
+        throw new Error(`HTTP error! Status: ${res.status}`);
+      }
+      const data = await res.json();
+      setPins([...pins, data]);
       setNewplace(null);
     } catch (err) {
       console.log(err);

@@ -1,7 +1,4 @@
-// Login.jsx
-
 import React, { useState } from "react";
-import axios from "axios";
 import "./login.css"; // Import CSS file
 import CancelIcon from '@mui/icons-material/Cancel';
 
@@ -9,26 +6,36 @@ function Login({ setShowLogin, myStorage, setCurrentUser }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
-    const [success, setSuccess] = useState(false);
+  const [success, setSuccess] = useState(false);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const loginUser = {
-        username:username,
+        username: username,
         password: password
+      };
+      const res = await fetch("https://travel-map-ac8b.onrender.com/api/users/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(loginUser),
+      });
+      if (!res.ok) {
+        throw new Error(`HTTP error! Status: ${res.status}`);
       }
-      const response = await axios.post("https://travel-map-ac8b.onrender.com/api/users/login", loginUser);
-      console.log("Login successful:", response.data);
-      console.log(response.data[0].username);
-      myStorage.setItem("user", response.data[0].username);
-      setCurrentUser(response.data[0].username);
-      setShowLogin(false)
+      const data = await res.json();
+      console.log("Login successful:", data);
+      myStorage.setItem("user", data.username);
+      setCurrentUser(data.username);
+      setShowLogin(false);
       setSuccess(true);
       setError(false);
-      // Logic for successful login (e.g., redirect user)
     } catch (error) {
       console.error("Login failed:", error);
-      setError("Invalid username or password. Please try again.");
+      setError("Login failed. Please try again.");
+      setSuccess(false);
     }
   };
 
@@ -59,10 +66,10 @@ function Login({ setShowLogin, myStorage, setCurrentUser }) {
           <button type="submit">Login</button>
         </div>
         {success && (
-          <span className="success">You are successfully Logged in..</span>
+          <span className="success">You are successfully logged in.</span>
         )}
         {error && (
-          <span className="error">Login failed...</span>
+          <span className="error">Login failed. {error}</span>
         )}
       </form>
     </div>
